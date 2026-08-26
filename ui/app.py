@@ -46,7 +46,7 @@ if view == "Risk‑Ranked Table":
     else:
         # sort
         df_sorted = df.sort_values("risk_score", ascending=False).reset_index(drop=True)
-        st.dataframe(df_sorted[["resource_id","rule_id","static_severity","risk_score","scoring_method"]],
+        st.dataframe(df_sorted[["resource_id", "rule_id", "static_severity", "risk_score", "scoring_method"]],
                      use_container_width=True, height=400)
 
         # show attack path for selected row
@@ -67,6 +67,6 @@ else:   # Attack Graph view
     else:
         # Convert to agraph format
         nodes = [Node(id=n, label=n.split(":")[-1], size=20) for n in G.nodes()]
-        edges = [Edge(source=u, target=v, label=d.get("action","")) for u,v,d in G.edges(data=True)]
+        edges = [Edge(source=u, target=v, label=d.get("action", "")) for u, v, d in G.edges(data=True)]
         config = Config(width=900, height=600, directed=True, physics=True, hierarchical=False)
         agraph(nodes=nodes, edges=edges, config=config)
