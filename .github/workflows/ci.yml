@@ -29,16 +29,12 @@ jobs:
           python-version: "3.11"
 
       # -------------------------------------------------
-      # Install common deps (flake8, pytest, hadolint)
+      # Install common deps (flake8, pytest)
       # -------------------------------------------------
       - name: Install lint & test tools
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest
-          # Install hadolint from GitHub releases
-          curl -sL https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64 -o /tmp/hadolint
-          chmod +x /tmp/hadolint
-          sudo mv /tmp/hadolint /usr/local/bin/hadolint
 
       # -------------------------------------------------
       # Lint Python code (scanner, graph, scoring, ui)
@@ -55,11 +51,13 @@ jobs:
           pytest -q --disable-warnings || true   # no tests yet, succeed
 
       # -------------------------------------------------
-      # Lint Dockerfiles with hadolint
+      # Lint Dockerfiles with hadolint (via Docker)
       # -------------------------------------------------
       - name: Lint Dockerfiles
         run: |
-          hadolint scanner/Dockerfile graph/Dockerfile scoring/Dockerfile ui/Dockerfile
+          for df in scanner/Dockerfile graph/Dockerfile scoring/Dockerfile ui/Dockerfile; do
+            docker run --rm -i hadolint/hadolint < "$df"
+          done
 
       # -------------------------------------------------
       # Build all Docker images (no push)
