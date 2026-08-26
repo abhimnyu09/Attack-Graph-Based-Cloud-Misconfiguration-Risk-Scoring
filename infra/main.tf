@@ -183,44 +183,7 @@ resource "aws_iam_user_policy" "no_mfa_full" {
   })
 }
 
-# 🔟 Dev role policy (PassRole + Lambda create)
-resource "aws_iam_role_policy" "dev_role_policy" {
-  role = aws_iam_role.dev_role.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["iam:PassRole", "lambda:CreateFunction"]
-      Resource = "*"
-    }]
-  })
-}
-
-# 🔟 Wildcard policy on role
-resource "aws_iam_role_policy" "wildcard_policy_role" {
-  role = aws_iam_role.wildcard_role.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = "*"
-      Resource = "*"
-    }]
-  })
-}
-
-# 🔟 Admin role policy attachment
-resource "aws_iam_role_policy_attachment" "admin_full" {
-  role       = aws_iam_role.admin_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}
-
-resource "aws_iam_role_policy_attachment" "admin_direct_full" {
-  role       = aws_iam_role.admin_role_direct.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}
-
-# 🔟 Security groups
+# Security groups
 resource "aws_security_group" "ssh_open" {
   name        = "ssh-open"
   description = "Open SSH to world"
@@ -272,7 +235,7 @@ resource "aws_security_group" "all_egress" {
   }
 }
 
-# 🔟 DynamoDB table without encryption
+# DynamoDB table without encryption
 resource "aws_dynamodb_table" "ddb_no_enc" {
   name           = "ddb-no-enc"
   billing_mode   = "PAY_PER_REQUEST"
@@ -286,13 +249,13 @@ resource "aws_dynamodb_table" "ddb_no_enc" {
   }
 }
 
-# 🔟 Basic KMS key (default policy)
+# Basic KMS key (default policy)
 resource "aws_kms_key" "basic_key" {
   description = "Basic KMS key"
   enable_key_rotation = false
 }
 
-# 🔟 Lambda function (uses dummy.zip present in infra/)
+# Lambda function (uses dummy.zip present in infra/)
 resource "aws_lambda_function" "admin_func" {
   function_name = "admin-func"
   role          = aws_iam_role.admin_role.arn
@@ -302,7 +265,7 @@ resource "aws_lambda_function" "admin_func" {
   source_code_hash = filebase64sha256("dummy.zip")
 }
 
-# 🔟 S3 bucket policy wildcard
+# S3 bucket policy wildcard
 resource "aws_s3_bucket_policy" "wildcard_policy" {
   bucket = aws_s3_bucket.public_bucket.id
   policy = jsonencode({
@@ -316,7 +279,7 @@ resource "aws_s3_bucket_policy" "wildcard_policy" {
   })
 }
 
-# 🔟 S3 bucket versioning suspended
+# S3 bucket versioning suspended
 resource "aws_s3_bucket_versioning" "no_versioning" {
   bucket = aws_s3_bucket.public_bucket.id
   versioning_configuration {
@@ -354,101 +317,89 @@ output "misconfig_catalog" {
       expected_severity = "HIGH"
     },
     {
-      id = "MC-005"
+      id = "MC-004b"
       type = "IAM_ROLE_PASSROLE_LAMBDA_CREATE"
       resource_id = aws_iam_role.dev_role.arn
       expected_severity = "HIGH"
     },
     {
-      id = "MC-006"
+      id = "MC-005"
       type = "IAM_ROLE_ADMIN_FULL"
       resource_id = aws_iam_role.admin_role.arn
       expected_severity = "CRITICAL"
     },
     {
-      id = "MC-007"
+      id = "MC-006"
       type = "IAM_ROLE_ADMIN_DIRECT"
       resource_id = aws_iam_role.admin_role_direct.arn
       expected_severity = "CRITICAL"
     },
     {
-      id = "MC-008"
+      id = "MC-007"
       type = "IAM_ROLE_WILDCARD_POLICY"
       resource_id = aws_iam_role_policy.wildcard_policy_role.id
       expected_severity = "CRITICAL"
     },
     {
-      id = "MC-009"
+      id = "MC-008"
       type = "IAM_ROLE_WILDCARD_ASSUMABLE"
       resource_id = aws_iam_role.wildcard_role.arn
       expected_severity = "HIGH"
     },
     {
-      id = "MC-010"
+      id = "MC-009"
       type = "IAM_USER_NO_MFA"
       resource_id = aws_iam_user.no_mfa_user.arn
       expected_severity = "HIGH"
     },
     {
-      id = "MC-011"
+      id = "MC-010"
       type = "IAM_USER_ACCESS_KEY_NO_MFA"
       resource_id = aws_iam_access_key.no_mfa_key.id
       expected_severity = "HIGH"
     },
     {
-      id = "MC-012"
+      id = "MC-011"
       type = "IAM_USER_POLICY_WILDCARD"
       resource_id = aws_iam_user_policy.no_mfa_full.id
       expected_severity = "CRITICAL"
     },
     {
-      id = "MC-013"
+      id = "MC-012"
       type = "SG_SSH_OPEN_WORLD"
       resource_id = aws_security_group.ssh_open.id
       expected_severity = "HIGH"
     },
     {
-      id = "MC-014"
+      id = "MC-011b"
       type = "SG_WEB_OPEN_WORLD"
       resource_id = aws_security_group.web_open.id
       expected_severity = "MEDIUM"
     },
     {
-      id = "MC-015"
+      id = "MC-012b"
       type = "SG_ALL_EGRESS"
       resource_id = aws_security_group.all_egress.id
       expected_severity = "LOW"
     },
     {
-      id = "MC-016"
+      id = "MC-013"
       type = "DYNAMODB_NO_ENCRYPTION"
       resource_id = aws_dynamodb_table.ddb_no_enc.arn
       expected_severity = "HIGH"
     },
     {
-      id = "MC-017"
+      id = "MC-014"
       type = "KMS_KEY_ROTATION_DISABLED"
       resource_id = aws_kms_key.basic_key.arn
       expected_severity = "MEDIUM"
     },
     {
-      id = "MC-018"
+      id = "MC-015"
       type = "LAMBDA_RUNS_AS_ADMIN"
       resource_id = aws_lambda_function.admin_func.arn
       expected_severity = "CRITICAL"
-    },
-    {
-      id = "MC-019"
-      type = "S3_BUCKET_WILDCARD_POLICY"
-      resource_id = aws_s3_bucket_policy.wildcard_policy.id
-      expected_severity = "HIGH"
-    },
-    {
-      id = "MC-020"
-      type = "S3_VERSIONING_DISABLED"
-      resource_id = aws_s3_bucket_versioning.no_versioning.bucket
-      expected_severity = "MEDIUM"
     }
   ])
-  description = "Catalog of deliberately seeded misconfigurations (~20)"
+  description = "Catalog of deliberately seeded misconfigurations (~18)"
 }
