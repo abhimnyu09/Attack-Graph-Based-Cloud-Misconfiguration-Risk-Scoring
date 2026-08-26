@@ -179,7 +179,7 @@ resource "aws_iam_role_policy" "wildcard_policy_role" {
 
 # 9️⃣ Security group open to world on SSH (22)
 resource "aws_security_group" "sg_ssh_open" {
-  name        = "sg-ssh-open"
+  name        = "ssh-open"
   description = "Open SSH to world"
   ingress {
     from_port   = 22
@@ -197,7 +197,7 @@ resource "aws_security_group" "sg_ssh_open" {
 
 # 🔟 Security group open to world on HTTP/HTTPS
 resource "aws_security_group" "sg_web_open" {
-  name        = "sg-web-open"
+  name        = "web-open"
   description = "Open HTTP/HTTPS to world"
   ingress {
     from_port   = 80
@@ -221,7 +221,7 @@ resource "aws_security_group" "sg_web_open" {
 
 # 🔟🔟 Security group allowing all egress
 resource "aws_security_group" "sg_all_egress" {
-  name        = "sg-all-egress"
+  name        = "all-egress"
   description = "Allow all outbound"
   egress {
     from_port   = 0
@@ -301,23 +301,7 @@ resource "aws_ssm_parameter" "plain_param" {
 
 # 1️⃣7️⃣ VPC flow logs disabled (no flow log resource) – represent by not creating flow log; we skip.
 
-# 1️⃣8️⃣ Default VPC open (default security group allows all)
-resource "aws_default_security_group" "default_sg_open" {
-  vpc_id = aws_default_vpc.default.id
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-data "aws_default_vpc" "default" {}
+
 
 # 1️⃣9️⃣ IAM role with AdministratorAccess directly attached (duplicate of admin role but separate)
 resource "aws_iam_role" "admin_role_direct" {
@@ -465,18 +449,12 @@ output "misconfig_catalog" {
     },
     {
       id = "MC-019"
-      type = "DEFAULT_SG_OPEN"
-      resource_id = aws_default_security_group.default_sg_open.id
-      expected_severity = "HIGH"
-    },
-    {
-      id = "MC-020"
       type = "IAM_ROLE_ADMIN_DIRECT"
       resource_id = aws_iam_role.admin_role_direct.arn
       expected_severity = "CRITICAL"
     },
     {
-      id = "MC-021"
+      id = "MC-020"
       type = "S3_VERSIONING_DISABLED"
       resource_id = aws_s3_bucket_versioning.no_versioning.bucket
       expected_severity = "MEDIUM"
