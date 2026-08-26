@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  # -------------------------------------------------
+  # 1️⃣ Scanner – reads cloud API, emits findings.jsonl
+  # -------------------------------------------------
+  scanner:
+    build:
+      context: ./scanner
+      dockerfile: Dockerfile
+    container_name: cspm-scanner
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - ENDPOINT_URL=${ENDPOINT_URL}               # for LocalStack
+    volumes:
+      - ./scanner:/app
+      - ./data:/data                               # shared volume for JSONL files
+    command: ["sleep", "infinity"]                # we'll exec `make scan` manually
+
+  # -------------------------------------------------
+  # 2️⃣ Graph builder – reads IAM policies, writes graph.graphml
+  # -------------------------------------------------
+  graph:
+    build:
+      context: ./graph
+      dockerfile: Dockerfile
+    container_name: cspm-graph
+    volumes:
+      - ./graph:/app
+      - ./data:/data
+    command: ["sleep", "infinity"]
+
+  # -------------------------------------------------
+  # 3️⃣ Scoring engine – reads findings + graph, writes scored_findings.jsonl
+  # -------------------------------------------------
+  scorer:
+    build:
+      context: ./scoring
+      dockerfile: Dockerfile
+    container_name: cspm-scorer
+    volumes:
+      - ./scoring:/app
+      - ./data:/data
+    command: ["sleep", "infinity"]
+
+  # -------------------------------------------------
+  # 4️⃣ UI – Streamlit dashboard (port 8501)
+  # -------------------------------------------------
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: cspm-ui
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./ui:/app
+      - ./data:/data
+    command: ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
