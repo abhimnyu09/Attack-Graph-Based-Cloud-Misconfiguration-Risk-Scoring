@@ -54,3 +54,4 @@ open http://localhost:8501
 
 ---
 *Generated from the project spec – keep this file up‑to‑date as the repo evolves.*
+demo
