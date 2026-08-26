@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-import json, pathlib
+import json
+import pathlib
 import networkx as nx
 from streamlit_agraph import agraph, Node, Edge, Config
 
@@ -15,6 +16,8 @@ graph_file = DATA_DIR / "graph.graphml"
 # -------------------------------------------------
 # Load data
 # -------------------------------------------------
+
+
 @st.cache_data
 def load_findings():
     if not findings_file.exists():
@@ -25,11 +28,13 @@ def load_findings():
             rows.append(json.loads(line))
     return pd.DataFrame(rows)
 
+
 @st.cache_data
 def load_graph():
     if not graph_file.exists():
         return nx.DiGraph()
     return nx.read_graphml(graph_file)
+
 
 df = load_findings()
 G = load_graph()
@@ -50,7 +55,7 @@ if view == "Risk‑Ranked Table":
                      use_container_width=True, height=400)
 
         # show attack path for selected row
-        sel = st.selectbox("Select a finding to see its attack path", df_sorted.index, format_func=lambda i: f"{df_sorted.loc[i,'resource_id']} – {df_sorted.loc[i,'rule_id']}")
+        sel = st.selectbox("Select a finding to see its attack path", df_sorted.index, format_func=lambda i: f"{df_sorted.loc[i, 'resource_id']} – {df_sorted.loc[i, 'rule_id']}")
         if sel is not None:
             row = df_sorted.loc[sel]
             st.markdown("**Attack path**")

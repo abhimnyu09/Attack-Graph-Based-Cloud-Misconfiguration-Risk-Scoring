@@ -3,7 +3,9 @@
 Placeholder graph builder – replace with real IAM parsing.
 Reads findings.jsonl (unused) and writes a tiny graph.graphml
 """
-import sys, pathlib, networkx as nx
+import pathlib
+import networkx as nx
+
 
 def main():
     out_path = pathlib.Path("/data/graph.graphml")
@@ -18,6 +20,7 @@ def main():
                edge_type="CAN_ESCALATE", action="iam:PassRole")
     nx.write_graphml(G, out_path)
     print(f"[graph] wrote graph with {G.number_of_nodes()} nodes, {G.number_of_edges()} edges to {out_path}")
+
 
 if __name__ == "__main__":
     main()

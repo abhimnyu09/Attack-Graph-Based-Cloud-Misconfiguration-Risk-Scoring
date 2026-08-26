@@ -3,7 +3,9 @@
 Placeholder scanner – replace with real implementation.
 Writes a tiny findings.jsonl to /data/findings.jsonl
 """
-import json, sys, pathlib
+import json
+import pathlib
+
 
 def main():
     out_path = pathlib.Path("/data/findings.jsonl")
@@ -18,6 +20,7 @@ def main():
         for row in dummy:
             f.write(json.dumps(row) + "\n")
     print(f"[scanner] wrote {len(dummy)} dummy findings to {out_path}")
+
 
 if __name__ == "__main__":
     main()

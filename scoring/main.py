@@ -3,9 +3,10 @@
 Placeholder scoring – reads findings.jsonl + graph.graphml,
 adds dummy risk_score and attack_path, writes scored_findings.jsonl
 """
-import json, pathlib, sys
-import pandas as pd
+import json
+import pathlib
 import networkx as nx
+
 
 def main():
     findings_path = pathlib.Path("/data/findings.jsonl")
@@ -20,7 +21,7 @@ def main():
             findings.append(json.loads(line))
 
     # load graph (unused for dummy)
-    G = nx.read_graphml(graph_path)
+    _ = nx.read_graphml(graph_path)
 
     # dummy scoring
     for f in findings:
@@ -35,6 +36,7 @@ def main():
         for row in findings:
             f.write(json.dumps(row) + "\n")
     print(f"[scoring] wrote {len(findings)} scored findings to {out_path}")
+
 
 if __name__ == "__main__":
     main()
