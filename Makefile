@@ -30,7 +30,7 @@ logs:
 # -------------------------------------------------
 seed:
 	@echo ">>> Seeding test account (LocalStack)…"
-	@cd infra && terraform init -upgrade && terraform apply -auto-approve
+	@cd infra && TF_VAR_endpoint_url=http://localhost:4566 terraform init -upgrade && TF_VAR_endpoint_url=http://localhost:4566 terraform apply -auto-approve
 	@echo ">>> Seed complete. Catalog written to data/misconfig_catalog.json"
 
 # -------------------------------------------------
