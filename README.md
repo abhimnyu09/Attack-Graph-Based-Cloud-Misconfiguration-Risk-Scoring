@@ -260,13 +260,3 @@ A detailed PDF (`PROJECT_REPORT.pdf`) lives in the repo root. It contains the sa
 | `make clean` | Remove generated `data/*.jsonl`, `*.graphml` |
 
 ---
-
-## 👥 Team & Mentor
-| Role | Name |
-|------|------|
-| Mentor | Sezal Rana |
-| Team (7) | … (add names) |
-
----
-
-*Prepared by the ISP team – ready for Friday evaluation.*
