@@ -2,6 +2,27 @@ version: "3.9"
 
 services:
   # -------------------------------------------------
+  # 0️⃣ LocalStack – AWS emulation (must start first)
+  # -------------------------------------------------
+  localstack:
+    image: localstack/localstack:1.4.0
+    container_name: cspm-localstack
+    ports:
+      - "4566:4566"
+      - "4571:4571"
+    environment:
+      - SERVICES=s3,iam,lambda,sts,ec2,dynamodb
+      - START_WEB=0
+      - DEBUG=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  # -------------------------------------------------
   # 1️⃣ Scanner – reads cloud API, emits findings.jsonl
   # -------------------------------------------------
   scanner:
@@ -10,14 +31,17 @@ services:
       dockerfile: Dockerfile
     container_name: cspm-scanner
     environment:
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
-      - ENDPOINT_URL=${ENDPOINT_URL}               # for LocalStack
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - ENDPOINT_URL=http://localstack:4566
     volumes:
       - ./scanner:/app
-      - ./data:/data                               # shared volume for JSONL files
-    command: ["sleep", "infinity"]                # we'll exec `make scan` manually
+      - ./data:/data
+    command: ["sleep", "infinity"]
+    depends_on:
+      localstack:
+        condition: service_healthy
 
   # -------------------------------------------------
   # 2️⃣ Graph builder – reads IAM policies, writes graph.graphml
