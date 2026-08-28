@@ -73,5 +73,17 @@ else:   # Attack Graph view
         # Convert to agraph format
         nodes = [Node(id=n, label=n.split(":")[-1], size=20) for n in G.nodes()]
         edges = [Edge(source=u, target=v, label=d.get("action", "")) for u, v, d in G.edges(data=True)]
-        config = Config(width=900, height=600, directed=True, physics=True, hierarchical=False)
+        config = Config(
+            width=1100,
+            height=750,
+            directed=True,
+            physics=True,
+            hierarchical=True,
+            hierarchicalDirection="UD",
+            hierarchicalSortMethod="directed",
+            nodeSpacing=180,
+            levelSeparation=150,
+            edgeMinimization=True,
+            parentCentralization=True,
+        )
         agraph(nodes=nodes, edges=edges, config=config)
