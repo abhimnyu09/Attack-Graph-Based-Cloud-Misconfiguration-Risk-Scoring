@@ -15,10 +15,12 @@ import boto3
 import networkx as nx
 from botocore.config import Config
 
+
 ENDPOINT_URL = os.getenv("ENDPOINT_URL")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "test")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "test")
 AWS_DEFAULT_REGION = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
+
 
 def get_iam_client():
     return boto3.client(
@@ -30,6 +32,7 @@ def get_iam_client():
         config=Config(retries={"max_attempts": 3}),
     )
 
+
 def get_lambda_client():
     return boto3.client(
         "lambda",
@@ -40,6 +43,7 @@ def get_lambda_client():
         config=Config(retries={"max_attempts": 3}),
     )
 
+
 def parse_policy_doc(doc):
     """Return list of statements (dict) from a policy document."""
     if isinstance(doc, str):
@@ -48,6 +52,7 @@ def parse_policy_doc(doc):
     if isinstance(stmts, dict):
         stmts = [stmts]
     return stmts
+
 
 def statements_allow_action(statements, action_pattern, resource_pattern="*"):
     """Check if any statement allows action_pattern on resource_pattern."""
@@ -67,6 +72,7 @@ def statements_allow_action(statements, action_pattern, resource_pattern="*"):
                         return True
     return False
 
+
 def match_pattern(value, pattern):
     """Simple wildcard match: pattern may contain *."""
     if pattern == "*":
@@ -75,17 +81,21 @@ def match_pattern(value, pattern):
         return value.startswith(pattern[:-1])
     return value == pattern
 
+
 def get_all_managed_policy_docs(iam, policy_arns):
     """Fetch default version document for each managed policy ARN."""
     docs = []
     for arn in policy_arns:
         try:
             pol = iam.get_policy(PolicyArn=arn)["Policy"]
-            ver = iam.get_policy_version(PolicyArn=arn, VersionId=pol["DefaultVersionId"])["PolicyVersion"]
+            ver = iam.get_policy_version(
+                PolicyArn=arn, VersionId=pol["DefaultVersionId"]
+            )["PolicyVersion"]
             docs.append(ver["Document"])
         except Exception:
             continue
     return docs
+
 
 def collect_principal_permissions(iam, principal_type, name):
     """Return list of policy documents (inline + managed) for a principal."""
@@ -126,6 +136,7 @@ def collect_principal_permissions(iam, principal_type, name):
         docs.extend(get_all_managed_policy_docs(iam, arns))
     return docs
 
+
 def is_admin_policy(doc):
     """Heuristic: policy grants *:* on *."""
     stmts = parse_policy_doc(doc)
@@ -142,6 +153,7 @@ def is_admin_policy(doc):
             return True
         # also check for AdministratorAccess managed policy name later
     return False
+
 
 def main():
     iam = get_iam_client()
@@ -188,10 +200,17 @@ def main():
                 continue
             principals = s.get("Principal", {})
             # Handle Principal = "*" (allow all)
-            if principals == "*" or (isinstance(principals, dict) and principals.get("AWS") == "*"):
+            if principals == "*" or (
+                isinstance(principals, dict) and principals.get("AWS") == "*"
+            ):
                 any_node = "arn:aws:iam::*:*"
                 if not G.has_node(any_node):
-                    G.add_node(any_node, node_type="PRINCIPAL", principal_type="ANY", name="ANY")
+                    G.add_node(
+                        any_node,
+                        node_type="PRINCIPAL",
+                        principal_type="ANY",
+                        name="ANY",
+                    )
                 G.add_edge(any_node, role_arn, edge_type="CAN_ASSUME", action="sts:AssumeRole")
             else:
                 # Principal can be AWS ARN, Service, Federated, etc.
@@ -203,7 +222,12 @@ def main():
                         if p == "*":
                             any_node = "arn:aws:iam::*:*"
                             if not G.has_node(any_node):
-                                G.add_node(any_node, node_type="PRINCIPAL", principal_type="ANY", name="ANY")
+                                G.add_node(
+                                    any_node,
+                                    node_type="PRINCIPAL",
+                                    principal_type="ANY",
+                                    name="ANY",
+                                )
                             G.add_edge(any_node, role_arn, edge_type="CAN_ASSUME", action="sts:AssumeRole")
                         elif p in principal_arns:
                             G.add_edge(p, role_arn, edge_type="CAN_ASSUME", action="sts:AssumeRole")
@@ -214,7 +238,12 @@ def main():
                     for svc in svcs:
                         svc_node = f"service:{svc}"
                         if not G.has_node(svc_node):
-                            G.add_node(svc_node, node_type="PRINCIPAL", principal_type="SERVICE", name=svc)
+                            G.add_node(
+                                svc_node,
+                                node_type="PRINCIPAL",
+                                principal_type="SERVICE",
+                                name=svc,
+                            )
                         G.add_edge(svc_node, role_arn, edge_type="CAN_ASSUME", action="sts:AssumeRole")
 
     # ----- Determine admin roles -----
@@ -222,7 +251,9 @@ def main():
     for r in roles:
         arn = r["Arn"]
         # check managed policies for AdministratorAccess
-        attached = iam.list_attached_role_policies(RoleName=r["RoleName"])["AttachedPolicies"]
+        attached = iam.list_attached_role_policies(RoleName=r["RoleName"])[
+            "AttachedPolicies"
+        ]
         for p in attached:
             if p["PolicyName"] == "AdministratorAccess":
                 admin_role_arns.add(arn)
@@ -264,29 +295,58 @@ def main():
         if principal_has_full_access(arn):
             for admin_arn in admin_role_arns:
                 if arn != admin_arn:
-                    G.add_edge(arn, admin_arn, edge_type="CAN_ESCALATE", action="full-access (*:*)")
+                    G.add_edge(
+                        arn,
+                        admin_arn,
+                        edge_type="CAN_ESCALATE",
+                        action="full-access (*:*)",
+                    )
 
     for arn, info in principal_arns.items():
         # 1. PassRole + Lambda CreateFunction (wildcard)
-        if principal_has(arn, "iam:PassRole", "*") and principal_has(arn, "lambda:CreateFunction", "*"):
+        if principal_has(arn, "iam:PassRole", "*") and principal_has(
+            arn, "lambda:CreateFunction", "*"
+        ):
             for target_role in all_role_arns:
                 if target_role != arn:
-                    G.add_edge(arn, target_role, edge_type="CAN_ESCALATE", action="iam:PassRole+lambda:CreateFunction")
+                    G.add_edge(
+                        arn,
+                        target_role,
+                        edge_type="CAN_ESCALATE",
+                        action="iam:PassRole+lambda:CreateFunction",
+                    )
         # 2. AttachRolePolicy / PutRolePolicy on *
-        if principal_has(arn, "iam:AttachRolePolicy", "*") or principal_has(arn, "iam:PutRolePolicy", "*"):
+        if principal_has(arn, "iam:AttachRolePolicy", "*") or principal_has(
+            arn, "iam:PutRolePolicy", "*"
+        ):
             for target_role in all_role_arns:
                 if target_role != arn:
-                    G.add_edge(arn, target_role, edge_type="CAN_ESCALATE", action="iam:AttachRolePolicy/PutRolePolicy")
+                    G.add_edge(
+                        arn,
+                        target_role,
+                        edge_type="CAN_ESCALATE",
+                        action="iam:AttachRolePolicy/PutRolePolicy",
+                    )
         # 3. CreateAccessKey on user (self or other)
         if principal_has(arn, "iam:CreateAccessKey", "*"):
             for u in users:
                 u_arn = u["Arn"]
                 if u_arn != arn:
-                    G.add_edge(arn, u_arn, edge_type="CAN_ESCALATE", action="iam:CreateAccessKey")
+                    G.add_edge(
+                        arn,
+                        u_arn,
+                        edge_type="CAN_ESCALATE",
+                        action="iam:CreateAccessKey",
+                    )
         # 4. Direct AssumeRole to admin role
         for admin_arn in admin_role_arns:
             if principal_has(arn, "sts:AssumeRole", admin_arn):
-                G.add_edge(arn, admin_arn, edge_type="CAN_ESCALATE", action="sts:AssumeRole")
+                G.add_edge(
+                    arn,
+                    admin_arn,
+                    edge_type="CAN_ESCALATE",
+                    action="sts:AssumeRole",
+                )
 
     # ----- Lambda resources -----
     try:
@@ -294,17 +354,30 @@ def main():
         for f in funcs:
             func_arn = f["FunctionArn"]
             role_arn = f.get("Role")
-            G.add_node(func_arn, node_type="RESOURCE", resource_type="LAMBDA", name=f["FunctionName"])
+            G.add_node(
+                func_arn,
+                node_type="RESOURCE",
+                resource_type="LAMBDA",
+                name=f["FunctionName"],
+            )
             if role_arn and role_arn in principal_arns:
                 # Lambda acts as its execution role
-                G.add_edge(func_arn, role_arn, edge_type="ACTS_AS", action="lambda:InvokeFunction")
+                G.add_edge(
+                    func_arn,
+                    role_arn,
+                    edge_type="ACTS_AS",
+                    action="lambda:InvokeFunction",
+                )
     except Exception:
         pass
 
     # ----- Write output -----
     out_path = "/data/graph.graphml"
     nx.write_graphml(G, out_path)
-    print(f"[graph] wrote graph with {G.number_of_nodes()} nodes, {G.number_of_edges()} edges to {out_path}")
+    print(
+        f"[graph] wrote graph with {G.number_of_nodes()} nodes, {G.number_of_edges()} edges to {out_path}"
+    )
+
 
 if __name__ == "__main__":
     main()
