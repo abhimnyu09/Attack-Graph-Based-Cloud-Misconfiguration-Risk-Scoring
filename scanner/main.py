@@ -91,7 +91,7 @@ def scan_s3(f):
 
             # Encryption
             try:
-                enc = s3.get_bucket_encryption(Bucket=name)
+                _ = s3.get_bucket_encryption(Bucket=name)
                 # if we get here, encryption exists
             except s3.exceptions.from_code("ServerSideEncryptionConfigurationNotFoundError"):
                 write_finding(f, arn, "S3_NO_ENCRYPTION", "MEDIUM", {"bucket": name})

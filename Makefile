@@ -8,7 +8,7 @@ help:
 	@echo "  make up        – build & start all containers (docker compose up -d)"
 	@echo "  make down      – stop & remove containers"
 	@echo "  make logs      – tail logs of all services"
-	@echo "  make seed      – run Terraform to seed misconfigurations (LocalStack by default)"
+	@echo "  make seed      – seed LocalStack with misconfigurations (requires awscli)"
 	@echo "  make scan      – run scanner inside its container → data/findings.jsonl"
 	@echo "  make graph     – build IAM graph → data/graph.graphml"
 	@echo "  make score     – score findings → data/scored_findings.jsonl"
@@ -26,11 +26,15 @@ logs:
 	docker compose logs -f
 
 # -------------------------------------------------
-# 1️⃣ Seed cloud account (Terraform)
+# 1️⃣ Seed cloud account (LocalStack) – uses AWS CLI from host
 # -------------------------------------------------
 seed:
 	@echo ">>> Seeding test account (LocalStack)…"
-	@cd infra && TF_VAR_endpoint_url=http://localhost:4566 terraform init -upgrade && TF_VAR_endpoint_url=http://localhost:4566 terraform apply -auto-approve
+	@export ENDPOINT_URL=http://localhost:4566 && \
+	 export AWS_ACCESS_KEY_ID=test && \
+	 export AWS_SECRET_ACCESS_KEY=test && \
+	 export AWS_DEFAULT_REGION=us-east-1 && \
+	 ./infra/seed.sh
 	@echo ">>> Seed complete. Catalog written to data/misconfig_catalog.json"
 
 # -------------------------------------------------
