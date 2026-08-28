@@ -1,2 +1,4 @@
 networkx
 pyyaml
+boto3
+botocore

@@ -51,10 +51,18 @@ services:
       context: ./graph
       dockerfile: Dockerfile
     container_name: cspm-graph
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - ENDPOINT_URL=http://localstack:4566
     volumes:
       - ./graph:/app
       - ./data:/data
     command: ["sleep", "infinity"]
+    depends_on:
+      localstack:
+        condition: service_healthy
 
   # -------------------------------------------------
   # 3️⃣ Scoring engine – reads findings + graph, writes scored_findings.jsonl
@@ -64,10 +72,18 @@ services:
       context: ./scoring
       dockerfile: Dockerfile
     container_name: cspm-scorer
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - ENDPOINT_URL=http://localstack:4566
     volumes:
       - ./scoring:/app
       - ./data:/data
     command: ["sleep", "infinity"]
+    depends_on:
+      localstack:
+        condition: service_healthy
 
   # -------------------------------------------------
   # 4️⃣ UI – Streamlit dashboard (port 8501)
