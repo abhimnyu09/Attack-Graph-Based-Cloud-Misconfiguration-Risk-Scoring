@@ -9,7 +9,7 @@ st.set_page_config(page_title="CSPM Risk Dashboard", layout="wide")
 
 st.title("☁️ Attack‑Graph CSPM Risk Dashboard")
 
-DATA_DIR = pathlib.Path("/data")
+DATA_DIR = pathlib.Path(__file__).parent.parent / "data"
 findings_file = DATA_DIR / "scored_findings.jsonl"
 graph_file = DATA_DIR / "graph.graphml"
 

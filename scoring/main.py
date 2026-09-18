@@ -4,14 +4,16 @@ Placeholder scoring – reads findings.jsonl + graph.graphml,
 adds dummy risk_score and attack_path, writes scored_findings.jsonl
 """
 import json
+import os
 import pathlib
 import networkx as nx
 
 
 def main():
-    findings_path = pathlib.Path("/data/findings.jsonl")
-    graph_path = pathlib.Path("/data/graph.graphml")
-    out_path = pathlib.Path("/data/scored_findings.jsonl")
+    output_dir = os.getenv("OUTPUT_DIR", "data")
+    findings_path = pathlib.Path(output_dir) / "findings.jsonl"
+    graph_path = pathlib.Path(output_dir) / "graph.graphml"
+    out_path = pathlib.Path(output_dir) / "scored_findings.jsonl"
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     # load findings

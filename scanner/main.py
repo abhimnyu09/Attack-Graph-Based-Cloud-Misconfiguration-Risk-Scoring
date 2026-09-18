@@ -9,7 +9,7 @@ import pathlib
 import boto3
 from botocore.config import Config
 
-ENDPOINT_URL = os.getenv("ENDPOINT_URL", "http://127.0.0.1:4566")
+ENDPOINT_URL = os.getenv("ENDPOINT_URL")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "test")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "test")
 AWS_DEFAULT_REGION = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
@@ -350,7 +350,8 @@ def scan_ssm(f):
 
 
 def main():
-    out_path = pathlib.Path("/data/findings.jsonl")
+    output_dir = os.getenv("OUTPUT_DIR", "data")
+    out_path = pathlib.Path(output_dir) / "findings.jsonl"
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     with out_path.open("w") as f:
