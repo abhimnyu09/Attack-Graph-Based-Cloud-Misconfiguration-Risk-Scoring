@@ -2018,28 +2018,6 @@ def inject_keyboard_shortcuts():
     """, unsafe_allow_html=True)
 
 
-def inject_theme_js():
-    """Inject JavaScript for theme initialization and persistence."""
-    current_theme = st.session_state.get("theme", "light")
-    st.markdown(f"""
-    <script>
-    // Initialize theme from localStorage or session state on page load
-    (function() {{
-        const savedTheme = localStorage.getItem('theme') || '{current_theme}';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    }})();
-
-    // Listen for theme changes from Streamlit (when button is clicked)
-    window.addEventListener('message', function(event) {{
-        if (event.data && event.data.type === 'theme-change') {{
-            document.documentElement.setAttribute('data-theme', event.data.theme);
-            localStorage.setItem('theme', event.data.theme);
-        }}
-    }});
-    </script>
-    """, unsafe_allow_html=True)
-
-
 def inject_graph_controls_js():
     """Inject JavaScript for graph canvas controls (fit, zoom, pan)."""
     st.markdown("""
@@ -3284,9 +3262,6 @@ def render_graph(graph):
     # Inject keyboard shortcuts JavaScript
     inject_keyboard_shortcuts()
 
-    # Inject theme initialization JavaScript
-    inject_theme_js()
-
 
 def main():
     st.set_page_config(
@@ -3306,10 +3281,6 @@ def main():
 
     if "workspace_view" not in st.session_state:
         st.session_state["workspace_view"] = "Findings"
-
-    # Initialize theme (default: light)
-    if "theme" not in st.session_state:
-        st.session_state["theme"] = "light"
 
     # Handle view switching via query parameter (?view=Findings|Attack Graph)
     query_view = st.query_params.get("view")
@@ -3359,23 +3330,6 @@ def main():
             f'</div>',
             unsafe_allow_html=True,
         )
-
-        # Theme toggle
-        theme_col1, theme_col2 = st.columns([1, 1])
-        with theme_col1:
-            st.markdown(
-                '<span style="font-size: var(--text-sm); color: var(--color-text-muted);">Theme</span>',
-                unsafe_allow_html=True,
-            )
-        with theme_col2:
-            current_theme = st.session_state.get("theme", "light")
-            theme_icon = "☀️" if current_theme == "light" else "🌙"
-            theme_label = "Light" if current_theme == "light" else "Dark"
-            if st.button(f"{theme_icon} {theme_label}", use_container_width=True, key="theme_toggle", help="Toggle light/dark theme"):
-                new_theme = "dark" if current_theme == "light" else "light"
-                st.session_state["theme"] = new_theme
-                st.markdown(f'<script>document.documentElement.setAttribute("data-theme", "{new_theme}"); localStorage.setItem("theme", "{new_theme}");</script>', unsafe_allow_html=True)
-                st.rerun()
 
         st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
 

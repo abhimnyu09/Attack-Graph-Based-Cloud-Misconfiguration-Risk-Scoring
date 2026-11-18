@@ -1,0 +1,18 @@
+[theme]
+# Light theme (default) - matches CSPM Console design system
+base = "light"
+primaryColor = "#0d9488"           # teal
+backgroundColor = "#f4f7fb"        # color-bg
+secondaryBackgroundColor = "#ffffff"  # color-surface
+textColor = "#172b45"              # color-text
+font = "sans serif"
+
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+port = 8501
+address = "0.0.0.0"
+
+[browser]
+gatherUsageStats = false
