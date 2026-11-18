@@ -11,6 +11,7 @@ Writes /data/graph.graphml
 """
 import os
 import json
+import pathlib
 import boto3
 import networkx as nx
 from botocore.config import Config
@@ -372,7 +373,9 @@ def main():
         pass
 
     # ----- Write output -----
-    out_path = "/data/graph.graphml"
+    output_dir = os.getenv("OUTPUT_DIR", "data")
+    out_path = pathlib.Path(output_dir) / "graph.graphml"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     nx.write_graphml(G, out_path)
     print(
         f"[graph] wrote graph with {G.number_of_nodes()} nodes, {G.number_of_edges()} edges to {out_path}"
