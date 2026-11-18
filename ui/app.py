@@ -41,7 +41,7 @@ APP_CSS = """
    CSPM Console — Design System
    ============================================================ */
 :root {
-  /* ---- Color Palette ---- */
+  /* ---- Color Palette (Light Theme - Default) ---- */
   /* Neutrals */
   --color-bg: #f4f7fb;
   --color-surface: #ffffff;
@@ -134,6 +134,59 @@ APP_CSS = """
   /* ---- Transitions ---- */
   --transition-fast: 120ms ease;
   --transition-base: 200ms ease;
+}
+
+/* ============================================================
+   Dark Theme (activated via [data-theme="dark"] on html/body)
+   ============================================================ */
+[data-theme="dark"] {
+  /* Neutrals */
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-hover: #334155;
+  --color-border: #334155;
+  --color-border-strong: #475569;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #64748b;
+
+  /* Brand */
+  --color-navy: #f8fafc;
+  --color-navy-light: #e2e8f0;
+  --color-teal: #2dd4bf;
+  --color-teal-light: #5eead4;
+  --color-teal-bg: #134e4a;
+  --color-blue: #60a5fa;
+  --color-blue-light: #93c5fd;
+  --color-blue-bg: #1e3a5f;
+
+  /* Semantic / Severity (adjusted for dark backgrounds) */
+  --color-critical: #f87171;
+  --color-critical-bg: #450a0a;
+  --color-critical-border: #7f1d1d;
+  --color-high: #fb923c;
+  --color-high-bg: #431407;
+  --color-high-border: #7c2d12;
+  --color-medium: #fbbf24;
+  --color-medium-bg: #422006;
+  --color-medium-border: #78350f;
+  --color-low: #4ade80;
+  --color-low-bg: #052e16;
+  --color-low-border: #14532d;
+  --color-info: #22d3ee;
+  --color-info-bg: #083344;
+  --color-info-border: #155e75;
+
+  /* State */
+  --color-focus: #60a5fa;
+  --color-focus-ring: rgba(96, 165, 250, 0.3);
+  --color-disabled: #334155;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.6);
 }
 
 /* ============================================================
@@ -1965,6 +2018,28 @@ def inject_keyboard_shortcuts():
     """, unsafe_allow_html=True)
 
 
+def inject_theme_js():
+    """Inject JavaScript for theme initialization and persistence."""
+    current_theme = st.session_state.get("theme", "light")
+    st.markdown(f"""
+    <script>
+    // Initialize theme from localStorage or session state on page load
+    (function() {{
+        const savedTheme = localStorage.getItem('theme') || '{current_theme}';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }})();
+
+    // Listen for theme changes from Streamlit (when button is clicked)
+    window.addEventListener('message', function(event) {{
+        if (event.data && event.data.type === 'theme-change') {{
+            document.documentElement.setAttribute('data-theme', event.data.theme);
+            localStorage.setItem('theme', event.data.theme);
+        }}
+    }});
+    </script>
+    """, unsafe_allow_html=True)
+
+
 def inject_graph_controls_js():
     """Inject JavaScript for graph canvas controls (fit, zoom, pan)."""
     st.markdown("""
@@ -3209,6 +3284,9 @@ def render_graph(graph):
     # Inject keyboard shortcuts JavaScript
     inject_keyboard_shortcuts()
 
+    # Inject theme initialization JavaScript
+    inject_theme_js()
+
 
 def main():
     st.set_page_config(
@@ -3228,6 +3306,10 @@ def main():
 
     if "workspace_view" not in st.session_state:
         st.session_state["workspace_view"] = "Findings"
+
+    # Initialize theme (default: light)
+    if "theme" not in st.session_state:
+        st.session_state["theme"] = "light"
 
     # Handle view switching via query parameter (?view=Findings|Attack Graph)
     query_view = st.query_params.get("view")
@@ -3277,6 +3359,25 @@ def main():
             f'</div>',
             unsafe_allow_html=True,
         )
+
+        # Theme toggle
+        theme_col1, theme_col2 = st.columns([1, 1])
+        with theme_col1:
+            st.markdown(
+                '<span style="font-size: var(--text-sm); color: var(--color-text-muted);">Theme</span>',
+                unsafe_allow_html=True,
+            )
+        with theme_col2:
+            current_theme = st.session_state.get("theme", "light")
+            theme_icon = "☀️" if current_theme == "light" else "🌙"
+            theme_label = "Light" if current_theme == "light" else "Dark"
+            if st.button(f"{theme_icon} {theme_label}", use_container_width=True, key="theme_toggle", help="Toggle light/dark theme"):
+                new_theme = "dark" if current_theme == "light" else "light"
+                st.session_state["theme"] = new_theme
+                st.markdown(f'<script>document.documentElement.setAttribute("data-theme", "{new_theme}"); localStorage.setItem("theme", "{new_theme}");</script>', unsafe_allow_html=True)
+                st.rerun()
+
+        st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
 
         # Refresh button at bottom - high contrast
         if st.button("🔄 Refresh Data", use_container_width=True, key="sidebar_refresh", type="primary"):
