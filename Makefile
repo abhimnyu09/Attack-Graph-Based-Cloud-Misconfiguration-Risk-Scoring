@@ -42,7 +42,7 @@ seed:
 # -------------------------------------------------
 scan:
 	@echo ">>> Running scanner…"
-	@docker compose exec -T scanner python main.py
+	@docker compose exec -T -e OUTPUT_DIR=/data scanner python main.py
 	@echo ">>> findings.jsonl written to data/"
 
 # -------------------------------------------------
@@ -50,7 +50,7 @@ scan:
 # -------------------------------------------------
 graph:
 	@echo ">>> Building IAM access/escalation graph…"
-	@docker compose exec -T graph python main.py
+	@docker compose exec -T -e OUTPUT_DIR=/data graph python main.py
 	@echo ">>> graph.graphml written to data/"
 
 # -------------------------------------------------
@@ -58,7 +58,7 @@ graph:
 # -------------------------------------------------
 score:
 	@echo ">>> Scoring findings with graph algorithms…"
-	@docker compose exec -T scorer python main.py
+	@docker compose exec -T -e OUTPUT_DIR=/data scorer python main.py
 	@echo ">>> scored_findings.jsonl written to data/"
 
 # -------------------------------------------------
