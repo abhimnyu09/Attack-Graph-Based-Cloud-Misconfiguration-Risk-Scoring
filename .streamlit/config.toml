@@ -19,3 +19,4 @@ gatherUsageStats = false
 
 [layout]
 initialSidebarState = "expanded"
+gatherUsageStats = false
