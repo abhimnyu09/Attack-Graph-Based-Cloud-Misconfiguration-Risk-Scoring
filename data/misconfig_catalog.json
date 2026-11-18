@@ -1,0 +1,14 @@
+[
+  {"id": "MC-001", "type": "S3_PUBLIC_READ", "resource_id": "arn:aws:s3:::public-data", "expected_severity": "MEDIUM"},
+  {"id": "MC-002", "type": "IAM_ROLE_ASSUMABLE_BY_ANYONE", "resource_id": "arn:aws:iam::000000000000:role/dev-role", "expected_severity": "HIGH"},
+  {"id": "MC-003", "type": "IAM_ROLE_PASSROLE_LAMBDA_CREATE", "resource_id": "arn:aws:iam::000000000000:role/dev-role", "expected_severity": "HIGH"},
+  {"id": "MC-004", "type": "LAMBDA_RUNS_AS_ADMIN", "resource_id": "arn:aws:lambda:us-east-1:000000000000:function:admin-func", "expected_severity": "CRITICAL"},
+  {"id": "MC-005", "type": "S3_BUCKET_WILDCARD_POLICY", "resource_id": "arn:aws:s3:::public-data", "expected_severity": "HIGH"},
+  {"id": "MC-006", "type": "IAM_USER_NO_MFA", "resource_id": "arn:aws:iam::000000000000:user/no-mfa-user", "expected_severity": "HIGH"},
+  {"id": "MC-007", "type": "IAM_USER_ACCESS_KEY_NO_MFA", "resource_id": "AKIA...", "expected_severity": "HIGH"},
+  {"id": "MC-008", "type": "IAM_POLICY_WILDCARD", "resource_id": "arn:aws:iam::000000000000:policy/wildcard-policy", "expected_severity": "CRITICAL"},
+  {"id": "MC-009", "type": "SG_SSH_OPEN_WORLD", "resource_id": "sg-xxx", "expected_severity": "HIGH"},
+  {"id": "MC-010", "type": "SG_WEB_OPEN_WORLD", "resource_id": "sg-yyy", "expected_severity": "MEDIUM"},
+  {"id": "MC-011", "type": "SG_ALL_EGRESS", "resource_id": "sg-zzz", "expected_severity": "LOW"},
+  {"id": "MC-012", "type": "DYNAMODB_NO_ENCRYPTION", "resource_id": "arn:aws:dynamodb:us-east-1:000000000000:table/ddb-no-enc", "expected_severity": "HIGH"}
+]

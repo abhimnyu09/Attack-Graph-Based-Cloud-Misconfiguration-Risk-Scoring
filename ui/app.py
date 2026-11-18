@@ -11,9 +11,17 @@ import streamlit as st
 from streamlit_agraph import agraph, Config, Edge, Node
 
 
-DATA_DIR = pathlib.Path(
-    os.getenv("DATA_DIR", str(pathlib.Path(__file__).parent.parent / "data"))
-)
+# Handle both local and Streamlit Cloud paths
+_REPO_ROOT = pathlib.Path(__file__).parent.parent
+_DATA_DIR = pathlib.Path(os.getenv("DATA_DIR", str(_REPO_ROOT / "data")))
+
+# Also check common Streamlit Cloud mount paths
+if not _DATA_DIR.exists():
+    _DATA_DIR = pathlib.Path("/mount/src") / _REPO_ROOT.name / "data"
+if not _DATA_DIR.exists():
+    _DATA_DIR = pathlib.Path("/mount/src/data")
+
+DATA_DIR = _DATA_DIR
 FINDINGS_FILE = DATA_DIR / "scored_findings.jsonl"
 GRAPH_FILE = DATA_DIR / "graph.graphml"
 SEVERITIES = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]

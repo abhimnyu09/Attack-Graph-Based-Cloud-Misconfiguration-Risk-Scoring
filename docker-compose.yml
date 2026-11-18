@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # -------------------------------------------------
   # 0️⃣ LocalStack – AWS emulation (must start first)
