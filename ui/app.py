@@ -218,8 +218,19 @@ APP_CSS = """
 [data-testid="stSidebar"] {
   background: var(--color-navy);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
+  /* Allow native collapse/expand - don't force width */
+}
+
+/* Ensure sidebar content is visible when expanded */
+[data-testid="stSidebar"][aria-expanded="true"] {
   width: var(--sidebar-width) !important;
   min-width: var(--sidebar-width) !important;
+}
+
+/* Make collapse handle more visible */
+[data-testid="stSidebar"] [data-testid="collapseControl"] {
+  background: var(--color-navy-light) !important;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
