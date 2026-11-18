@@ -16,3 +16,7 @@ address = "0.0.0.0"
 
 [browser]
 gatherUsageStats = false
+
+[layout]
+initialSidebarState = "expanded"
+gatherUsageStats = false
