@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d6" for="edge" attr.name="action" attr.type="string"/>
+<key id="d5" for="edge" attr.name="edge_type" attr.type="string"/>
+<key id="d4" for="node" attr.name="resource_type" attr.type="string"/>
+<key id="d3" for="node" attr.name="is_admin" attr.type="boolean"/>
+<key id="d2" for="node" attr.name="name" attr.type="string"/>
+<key id="d1" for="node" attr.name="principal_type" attr.type="string"/>
+<key id="d0" for="node" attr.name="node_type" attr.type="string"/>
+<graph edgedefault="directed"><node id="arn:aws:iam::000000000000:role/admin-role">
+  <data key="d0">PRINCIPAL</data>
+  <data key="d1">ROLE</data>
+  <data key="d2">admin-role</data>
+  <data key="d3">True</data>
+</node>
+<node id="arn:aws:iam::000000000000:role/dev-role">
+  <data key="d0">PRINCIPAL</data>
+  <data key="d1">ROLE</data>
+  <data key="d2">dev-role</data>
+  <data key="d3">False</data>
+</node>
+<node id="arn:aws:iam::000000000000:role/wildcard-role">
+  <data key="d0">PRINCIPAL</data>
+  <data key="d1">ROLE</data>
+  <data key="d2">wildcard-role</data>
+  <data key="d3">True</data>
+</node>
+<node id="arn:aws:iam::000000000000:user/no-mfa-user">
+  <data key="d0">PRINCIPAL</data>
+  <data key="d1">USER</data>
+  <data key="d2">no-mfa-user</data>
+  <data key="d3">True</data>
+</node>
+<node id="service:lambda.amazonaws.com">
+  <data key="d0">PRINCIPAL</data>
+  <data key="d1">SERVICE</data>
+  <data key="d2">lambda.amazonaws.com</data>
+</node>
+<node id="arn:aws:iam::*:*">
+  <data key="d0">PRINCIPAL</data>
+  <data key="d1">ANY</data>
+  <data key="d2">ANY</data>
+</node>
+<node id="service:ec2.amazonaws.com">
+  <data key="d0">PRINCIPAL</data>
+  <data key="d1">SERVICE</data>
+  <data key="d2">ec2.amazonaws.com</data>
+</node>
+<node id="arn:aws:lambda:us-east-1:000000000000:function:admin-func">
+  <data key="d0">RESOURCE</data>
+  <data key="d4">LAMBDA</data>
+  <data key="d2">admin-func</data>
+</node>
+<edge source="arn:aws:iam::000000000000:role/admin-role" target="arn:aws:iam::000000000000:role/wildcard-role">
+  <data key="d5">CAN_ESCALATE</data>
+  <data key="d6">full-access (*:*)</data>
+</edge>
+<edge source="arn:aws:iam::000000000000:role/dev-role" target="arn:aws:iam::000000000000:role/admin-role">
+  <data key="d5">CAN_ESCALATE</data>
+  <data key="d6">iam:PassRole+lambda:CreateFunction</data>
+</edge>
+<edge source="arn:aws:iam::000000000000:role/dev-role" target="arn:aws:iam::000000000000:role/wildcard-role">
+  <data key="d5">CAN_ESCALATE</data>
+  <data key="d6">iam:PassRole+lambda:CreateFunction</data>
+</edge>
+<edge source="arn:aws:iam::000000000000:role/wildcard-role" target="arn:aws:iam::000000000000:role/admin-role">
+  <data key="d5">CAN_ESCALATE</data>
+  <data key="d6">full-access (*:*)</data>
+</edge>
+<edge source="arn:aws:iam::000000000000:user/no-mfa-user" target="arn:aws:iam::000000000000:role/wildcard-role">
+  <data key="d5">CAN_ESCALATE</data>
+  <data key="d6">full-access (*:*)</data>
+</edge>
+<edge source="arn:aws:iam::000000000000:user/no-mfa-user" target="arn:aws:iam::000000000000:role/admin-role">
+  <data key="d5">CAN_ESCALATE</data>
+  <data key="d6">full-access (*:*)</data>
+</edge>
+<edge source="service:lambda.amazonaws.com" target="arn:aws:iam::000000000000:role/admin-role">
+  <data key="d5">CAN_ASSUME</data>
+  <data key="d6">sts:AssumeRole</data>
+</edge>
+<edge source="arn:aws:iam::*:*" target="arn:aws:iam::000000000000:role/dev-role">
+  <data key="d5">CAN_ASSUME</data>
+  <data key="d6">sts:AssumeRole</data>
+</edge>
+<edge source="service:ec2.amazonaws.com" target="arn:aws:iam::000000000000:role/wildcard-role">
+  <data key="d5">CAN_ASSUME</data>
+  <data key="d6">sts:AssumeRole</data>
+</edge>
+<edge source="arn:aws:lambda:us-east-1:000000000000:function:admin-func" target="arn:aws:iam::000000000000:role/admin-role">
+  <data key="d5">ACTS_AS</data>
+  <data key="d6">lambda:InvokeFunction</data>
+</edge>
+</graph></graphml>
